@@ -37,19 +37,14 @@ public class PlayerEntryController {
     )
     @GetMapping("/{username}")
     public ResponseEntity<List<PlayerEntry>> getPlayerEntry(@PathVariable String username) {
-        System.out.println("\n\n\n");
         username = "\"" + username + "\"";
-        System.out.println("Getting player entry for: " + username);
         if (service.playerExists(username)) {
             List<UltiData> playerEntry = service.getPlayer(username);
             List<PlayerEntry> playerEntrys = new ArrayList<PlayerEntry>(playerEntry.size());
-            System.out.println("Player entry size: " + playerEntry.size());
             for (UltiData ud : playerEntry) {
                 PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName(), ud.getTeam(), ud.getRankingValue());
                 playerEntrys.add(toAdd);
             }
-
-            System.out.println("\n\n\n");
             return ResponseEntity.ok(playerEntrys);
         }
         else {
