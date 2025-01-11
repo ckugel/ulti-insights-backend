@@ -9,14 +9,16 @@ import jakarta.persistence.Id;
 public class PlayerEntry {
     private String name;
     private String team;
+    private short year;
     private Double rankingValue;
 
     public PlayerEntry() {
     }
 
-    public PlayerEntry(String name, String team, Double rankingValue) {
+    public PlayerEntry(String name, String team, short year, Double rankingValue) {
         this.name = name;
         this.team = team;
+        this.year = year;
         this.rankingValue = rankingValue;
     }
 
@@ -44,11 +46,20 @@ public class PlayerEntry {
         this.rankingValue = rankingValue;
     }
 
+    public short getYear() {
+        return year;
+    }
+
+    public void setYear(short year) {
+        this.year = year;
+    }
+
     @Override
     public String toString() {
         return "PlayerEntry{" +
                 "name='" + name + '\'' +
                 ", team='" + team + '\'' +
+                ", year=" + year +
                 ", rankingValue=" + rankingValue +
                 '}';
     }

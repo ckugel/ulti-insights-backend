@@ -37,7 +37,7 @@ public class TeamEntryController {
             List<UltiData> playerEntry = service.getTeam(name);
             List<PlayerEntry> playerEntrys = new ArrayList<PlayerEntry>(playerEntry.size());
             for (UltiData ud : playerEntry) {
-                PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName(), ud.getTeam(), ud.getRankingValue());
+                PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName(), ud.getTeam(), ud.getYear_value(), ud.getRankingValue());
                 playerEntrys.add(toAdd);
             }
             TeamEntry teamEntry = new TeamEntry(name, playerEntry.get(0).getYear_value(), playerEntrys);
