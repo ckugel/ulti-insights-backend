@@ -10,4 +10,6 @@ public interface UltiDataRepository extends JpaRepository<UltiData, Long> {
     List<UltiData> findAllByPlayerNameIgnoreCase(String playerName);
 
     List<UltiData> findAllByTeamIgnoreCase(String teamName);
+
+    List<UltiData> findAllByTeamIgnoreCaseAndYearValue(String teamName, short year_value);
 }

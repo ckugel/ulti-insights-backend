@@ -37,10 +37,29 @@ public class TeamEntryController {
             List<UltiData> playerEntry = service.getTeam(name);
             List<PlayerEntry> playerEntrys = new ArrayList<PlayerEntry>(playerEntry.size());
             for (UltiData ud : playerEntry) {
-                PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName(), ud.getTeam(), ud.getYear_value(), ud.getRankingValue());
+                PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName().substring(1, ud.getPlayerName().length() - 1), ud.getTeam().substring(1, ud.getTeam().length() - 1), ud.getYearValue(), ud.getRankingValue());
                 playerEntrys.add(toAdd);
             }
-            TeamEntry teamEntry = new TeamEntry(name, playerEntry.get(0).getYear_value(), playerEntrys);
+            TeamEntry teamEntry = new TeamEntry(name, playerEntry.get(0).getYearValue(), playerEntrys);
+            return ResponseEntity.ok(teamEntry);
+        }
+        else {
+            return ResponseEntity.status(424).body(null);
+        }
+    }
+
+    @Operation(summary = "Get team entry for year", description = "gets the neccessary data for a given team page in a given year")
+    @GetMapping("/{name}/{year}")
+    public ResponseEntity<TeamEntry> getTeamEntryYear(@PathVariable String name, @PathVariable short year) {
+        name = "\"" + name + "\"";
+        if (service.teamExists(name)) { //FIXME: check if exists for year as well
+            List<UltiData> playerEntry = service.getTeamYear(name, year);
+            List<PlayerEntry> playerEntrys = new ArrayList<PlayerEntry>(playerEntry.size());
+            for (UltiData ud : playerEntry) {
+                PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName().substring(1, ud.getPlayerName().length() - 1), ud.getTeam().substring(1, ud.getTeam().length() - 1), ud.getYearValue(), ud.getRankingValue());
+                playerEntrys.add(toAdd);
+            }
+            TeamEntry teamEntry = new TeamEntry(name, year, playerEntrys);
             return ResponseEntity.ok(teamEntry);
         }
         else {

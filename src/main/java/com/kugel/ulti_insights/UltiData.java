@@ -10,10 +10,10 @@ public class UltiData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private short year_value;
+    private short yearValue;
     private String tournament;
     private short quarter;
-    private double year_value_two;
+    private double yearValueTwo;
     private short tier;
     private double multiplier;
     private Long finishPosition;
@@ -26,11 +26,11 @@ public class UltiData {
     public UltiData() {
     }
 
-    public UltiData(short year_value, String Tournament, short quarter, double year_value_two, short tier, double multiplier, Long finishPosition, String team, String PlayerName, double stat, double share, double rankingValue) {
-        this.year_value = year_value;
+    public UltiData(short yearValue, String Tournament, short quarter, double yearValueTwo, short tier, double multiplier, Long finishPosition, String team, String PlayerName, double stat, double share, double rankingValue) {
+        this.yearValue = yearValue;
         this.tournament = Tournament;
         this.quarter = quarter;
-        this.year_value_two = year_value_two;
+        this.yearValueTwo = yearValueTwo;
         this.tier = tier;
         this.multiplier = multiplier;
         this.finishPosition = finishPosition;
@@ -49,20 +49,20 @@ public class UltiData {
         this.id = id;
     }
 
-    public short getYear_value() {
-        return year_value;
+    public short getYearValue() {
+        return yearValue;
     }
 
-    public void setYear_value(short year_value) {
-        this.year_value = year_value;
+    public void setYearValue(short year_value) {
+        this.yearValue = year_value;
     }
 
-    public double getYear_value_two() {
-        return year_value_two;
+    public double getYearValueTwo() {
+        return yearValueTwo;
     }
 
-    public void setYear_value_two(double year_value_two) {
-        this.year_value_two = year_value_two;
+    public void setYearValueTwo(double year_value_two) {
+        this.yearValueTwo = year_value_two;
     }
 
     public String getTournament() {

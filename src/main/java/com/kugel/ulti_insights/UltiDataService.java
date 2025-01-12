@@ -30,4 +30,8 @@ public class UltiDataService {
     public boolean teamExists(String name) {
         return !repository.findAllByTeamIgnoreCase(name).isEmpty();
     }
+
+    public List<UltiData> getTeamYear(String teamName, short year) {
+        return repository.findAllByTeamIgnoreCaseAndYearValue(teamName, year);
+    }
 }
