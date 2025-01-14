@@ -34,4 +34,8 @@ public class UltiDataService {
     public List<UltiData> getTeamYear(String teamName, short year) {
         return repository.findAllByTeamIgnoreCaseAndYearValue(teamName, year);
     }
+
+    public List<UltiData> getAll() {
+        return repository.findAll();
+    }
 }
