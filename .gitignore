@@ -35,6 +35,7 @@ build/
 ### Java ###
 # Compiled class file
 *.class
+.ccls-cache/
 
 # Log file
 

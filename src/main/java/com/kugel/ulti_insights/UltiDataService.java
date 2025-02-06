@@ -35,7 +35,15 @@ public class UltiDataService {
         return repository.findAllByTeamIgnoreCaseAndYearValue(teamName, year);
     }
 
+    public List<UltiData> getTeamByLeagueAndNameAndYear(String name, short year, League league) {
+        return repository.findAllByTeamIgnoreCaseAndYearValueAndLeague(name, year, league);
+    }
+
     public List<UltiData> getAll() {
         return repository.findAll();
+    }
+
+    public List<UltiData> getTeamByLeagueAndName(String name, League league) {
+        return repository.findByTeamIgnoreCaseAndLeague(name, league);
     }
 }

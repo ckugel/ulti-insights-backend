@@ -32,6 +32,69 @@ public class StartupPopulator implements CommandLineRunner {
 
                 short year = Short.parseShort(data[1]);
                 String tournament = data[2];
+                League league;
+                if (tournament.contains("D1")) {
+                    // can be Mens or womens
+                    if (tournament.contains("Men's")) {
+                        league = League.MENS_COLLEGE_D1;
+                    }
+                    else {
+                        league = League.WOMENS_COLLEGE_D1;
+                    }
+                }
+                else if (tournament.contains("D3")) {
+                    // can be Mens or womens
+                    if (tournament.contains("Men's")) {
+                        league = League.MENS_COLLEGE_D3;
+                    }
+                    else {
+                        league = League.WOMENS_COLLEGE_D3;
+                    }
+                }
+                else if (tournament.contains("Club")) {
+                    // Can be Mens, Womens, Mixed
+                    if (tournament.contains("Men's")) {
+                        league = League.MENS_CLUB;
+                    }
+                    else if (tournament.contains("Women's")) {
+                        league = League.WOMENS_CLUB;
+                    }
+                    else {
+                        league = League.MIXED_CLUB;
+                    }
+                }
+                else if (tournament.contains("YCC")) {
+                    // can be U20, U17
+                        if (tournament.contains("U-20")) {
+                            // can be Mens, Womens, Mixed
+                            if (tournament.contains("Boys")) {
+                                league = League.MENS_YCC_U20;
+                            }
+                            else if (tournament.contains("Girls")) {
+                                league = League.WOMENS_YCC_U20;
+                            }
+                            else {
+                                league = League.MIXED_YCC_U20;
+                            }
+                        } else if (tournament.contains("U-17")) {
+                            // can be Mens, Womens, Mixed
+                            if (tournament.contains("Boys")) {
+                                league = League.MENS_YCC_U17;
+                            }
+                            else if (tournament.contains("Girls")) {
+                                league = League.WOMENS_YCC_U17;
+                            }
+                            else {
+                                league = League.MIXED_YCC_U17;
+                            }
+                        }
+                        else {
+                            league = League.OTHER;
+                        }
+                }
+                else {
+                    league = League.OTHER;
+                }
                 short quarter = Short.parseShort(data[3]);
                 double year2 = Double.parseDouble(data[4]);
                 short tier = Short.parseShort(data[5]);
@@ -52,7 +115,7 @@ public class StartupPopulator implements CommandLineRunner {
                 current++;
                 double rankingValue = Double.parseDouble(data[current]);
 
-                UltiData ultidata = new UltiData(year, tournament, quarter, year2, tier, multiplier, finishPosition, team, playerName, stat, share, rankingValue);
+                UltiData ultidata = new UltiData(year, tournament, quarter, year2, tier, multiplier, finishPosition, team, playerName, stat, share, rankingValue, league);
                 service.saveUltiData(ultidata);
             }
 

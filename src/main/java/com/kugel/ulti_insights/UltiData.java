@@ -4,6 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import com.kugel.ulti_insights.League;
 
 @Entity
 public class UltiData {
@@ -22,11 +25,13 @@ public class UltiData {
     private double stat;
     private double share;
     private double rankingValue;
+    @Enumerated(EnumType.STRING)
+    private League league;
 
     public UltiData() {
     }
 
-    public UltiData(short yearValue, String Tournament, short quarter, double yearValueTwo, short tier, double multiplier, Long finishPosition, String team, String PlayerName, double stat, double share, double rankingValue) {
+    public UltiData(short yearValue, String Tournament, short quarter, double yearValueTwo, short tier, double multiplier, Long finishPosition, String team, String PlayerName, double stat, double share, double rankingValue, League league) {
         this.yearValue = yearValue;
         this.tournament = Tournament;
         this.quarter = quarter;
@@ -39,6 +44,15 @@ public class UltiData {
         this.stat = stat;
         this.share = share;
         this.rankingValue = rankingValue;
+        this.league = league;
+    }
+
+    public League getLeague() {
+        return league;
+    }
+
+    public void setLeague(League league) {
+        this.league = league;
     }
 
     public Long getId() {

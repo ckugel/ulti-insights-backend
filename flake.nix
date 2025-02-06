@@ -25,7 +25,7 @@
             export PORT=8080
           '';
         default = pkgs.mkShell {
-          packages = with pkgs; [ cmake maven gcc ncurses patchelf zlib nodejs_22 libmysqlclient_3_2 ];
+          packages = with pkgs; [ cmake maven gcc ncurses patchelf zlib nodejs_22 libmysqlclient_3_2 openjdk ];
         };
       });
     };
