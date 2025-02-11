@@ -30,8 +30,12 @@ public class SearchController {
         // could maybe be cached later lol, I do not care about space complexity
 
         for (UltiData ud : service.getAll()) {
-            players.add(ud.getPlayerName());
-            teams.add(ud.getAsTeamEntry());
+	    if (!players.contains(ud.getPlayerName())) {
+		players.add(ud.getPlayerName());
+	    }
+	    if (!teams.contains(ud.getAsTeamEntry())) {
+		teams.add(ud.getAsTeamEntry());
+	    }
         }
 
         ArrayList<String> playerList = new ArrayList<>(players);
@@ -56,8 +60,12 @@ public class SearchController {
         // could maybe be cached later lol, I do not care about space complexity
 
         for (UltiData ud : service.getAll()) {
-            players.add(ud.getPlayerName());
-            teams.add(ud.getAsTeamEntry());
+	    if (!players.contains(ud.getPlayerName())) {
+		players.add(ud.getPlayerName());
+	    }
+	    if (!teams.contains(ud.getAsTeamEntry())) {
+		teams.add(ud.getAsTeamEntry());
+	    }
         }
 
         ArrayList<String> playerList = new ArrayList<>();

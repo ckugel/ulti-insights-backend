@@ -58,4 +58,22 @@ public class TeamEntry {
 	this.league = league;
 	}
 
+
+    @Override
+    public int hashCode() {
+		return teamName.hashCode() ^ league.hashCode();
+	}
+
+    @Override
+    public boolean equals(Object o) {
+	if (o == this) {
+	    return true;
+	}
+	if (!(o instanceof TeamEntry)) {
+	    return false;
+	}
+	TeamEntry te = (TeamEntry) o;
+	return te.getTeamName().equals(teamName) && te.getLeague().equals(league);
+    }
+
 }
