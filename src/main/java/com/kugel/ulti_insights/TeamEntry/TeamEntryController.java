@@ -47,7 +47,7 @@ public class TeamEntryController {
                 PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName().substring(1, ud.getPlayerName().length() - 1), ud.getTeam().substring(1, ud.getTeam().length() - 1), ud.getYearValue(), ud.getRankingValue());
                 playerEntrys.add(toAdd);
             }
-            TeamEntry teamEntry = new TeamEntry(name, playerEntry.get(0).getYearValue(), playerEntrys);
+            TeamEntry teamEntry = new TeamEntry(name, playerEntry.get(0).getYearValue(), playerEntrys, league);
             return ResponseEntity.ok(teamEntry);
         } else {
             return ResponseEntity.status(424).body(null);
@@ -70,7 +70,7 @@ public class TeamEntryController {
                 PlayerEntry toAdd = new PlayerEntry(ud.getPlayerName().substring(1, ud.getPlayerName().length() - 1), ud.getTeam().substring(1, ud.getTeam().length() - 1), ud.getYearValue(), ud.getRankingValue());
                 playerEntrys.add(toAdd);
             }
-            TeamEntry teamEntry = new TeamEntry(name, year, playerEntrys);
+            TeamEntry teamEntry = new TeamEntry(name, year, playerEntrys, league);
             return ResponseEntity.ok(teamEntry);
         } else {
             return ResponseEntity.status(424).body(null);

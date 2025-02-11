@@ -1,6 +1,8 @@
 package com.kugel.ulti_insights.TeamEntry;
 
 import com.kugel.ulti_insights.PlayerEntrys.PlayerEntry;
+import com.kugel.ulti_insights.League;
+
 import jakarta.persistence.Entity;
 
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.List;
 public class TeamEntry {
     private String teamName;
     private short year;
+    private League league;
 
     private List<PlayerEntry> players;
 
@@ -16,10 +19,11 @@ public class TeamEntry {
         players = new ArrayList<>();
     }
 
-    public TeamEntry(String teamName, short year, List<PlayerEntry> players) {
+    public TeamEntry(String teamName, short year, List<PlayerEntry> players, League league) {
         this.teamName = teamName;
         this.year = year;
         this.players = players;
+	this.league = league;
     }
 
     public String getTeamName() {
@@ -45,4 +49,13 @@ public class TeamEntry {
     public void setPlayers(List<PlayerEntry> players) {
         this.players = players;
     }
+
+    public League getLeague() {
+		return league;
+	}
+
+    public void setLeague(League league) {
+	this.league = league;
+	}
+
 }

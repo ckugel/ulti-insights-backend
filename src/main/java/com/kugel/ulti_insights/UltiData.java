@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import com.kugel.ulti_insights.League;
+import com.kugel.ulti_insights.TeamEntry.TeamEntry;
 
 @Entity
 public class UltiData {
@@ -158,4 +159,8 @@ public class UltiData {
     public void setRankingValue(double rankingValue) {
         this.rankingValue = rankingValue;
     }
+
+    public TeamEntry getAsTeamEntry() {
+		return new TeamEntry(team, yearValue, null, league);
+	}
 }
