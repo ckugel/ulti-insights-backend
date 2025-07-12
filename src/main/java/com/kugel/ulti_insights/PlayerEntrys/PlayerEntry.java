@@ -1,66 +1,78 @@
 package com.kugel.ulti_insights.PlayerEntrys;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
 // Does not get saved in the database but is used for easy formatting back to the client
 public class PlayerEntry {
-    private String name;
-    private String team;
-    private short year;
-    private Double rankingValue;
+  private String name;
+  private String team;
+  private short year;
+  private String league;
+  private Double rankingValue;
 
-    public PlayerEntry() {
-    }
+  public PlayerEntry() {}
 
-    public PlayerEntry(String name, String team, short year, Double rankingValue) {
-        this.name = name;
-        this.team = team;
-        this.year = year;
-        this.rankingValue = rankingValue;
-    }
+  public PlayerEntry(String name, String team, short year, Double rankingValue, String league) {
+    this.name = name;
+    this.team = team;
+    this.year = year;
+    this.league = league;
+    this.rankingValue = rankingValue;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getLeague() {
+    return league;
+  }
 
-    public String getTeam() {
-        return team;
-    }
+  public void setLeague(String league) {
+    this.league = league;
+  }
 
-    public Double getRankingValue() {
-        return rankingValue;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getTeam() {
+    return team;
+  }
 
-    public void setTeam(String team) {
-        this.team = team;
-    }
+  public Double getRankingValue() {
+    return rankingValue;
+  }
 
-    public void setRankingValue(Double rankingValue) {
-        this.rankingValue = rankingValue;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public short getYear() {
-        return year;
-    }
+  public void setTeam(String team) {
+    this.team = team;
+  }
 
-    public void setYear(short year) {
-        this.year = year;
-    }
+  public void setRankingValue(Double rankingValue) {
+    this.rankingValue = rankingValue;
+  }
 
-    @Override
-    public String toString() {
-        return "PlayerEntry{" +
-                "name='" + name + '\'' +
-                ", team='" + team + '\'' +
-                ", year=" + year +
-                ", rankingValue=" + rankingValue +
-                '}';
-    }
+  public short getYear() {
+    return year;
+  }
+
+  public void setYear(short year) {
+    this.year = year;
+  }
+
+  @Override
+  public String toString() {
+    return "PlayerEntry{"
+        + "name='"
+        + name
+        + '\''
+        + ", team='"
+        + team
+        + '\''
+        + ", year="
+        + year
+        + ", league="
+        + league
+        + ", rankingValue="
+        + rankingValue
+        + '}';
+  }
 }
