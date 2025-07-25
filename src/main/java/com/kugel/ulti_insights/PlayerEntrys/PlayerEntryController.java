@@ -45,7 +45,7 @@ public class PlayerEntryController {
                 ud.getPlayerName().substring(1, ud.getPlayerName().length() - 1),
                 ud.getTeam().substring(1, ud.getTeam().length() - 1),
                 ud.getYearValue(),
-                ud.getRankingValue(),
+                ud.getDisplayValue(),
                 ud.getLeague().toString());
         playerEntrys.add(toAdd);
       }
@@ -55,4 +55,3 @@ public class PlayerEntryController {
     }
   }
 }
-

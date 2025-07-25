@@ -32,20 +32,25 @@ public class TeamEntryController {
         @ApiResponse(responseCode = "424", description = "Team years not found")
       })
   @GetMapping("/years/{name}/{league}")
-  public ResponseEntity<List<Short>> getTeamYears(
+  public ResponseEntity<List<String>> getTeamYears(
       @PathVariable String name, @PathVariable League league) {
     name = "\"" + name + "\"";
-    List<Short> toRet = new ArrayList();
+    List<String> toRet = new ArrayList();
+    toRet.add("all");
     List<UltiData> playerEntry = service.getTeamByLeagueAndName(name, league);
     for (UltiData ud : playerEntry) {
-      if (!toRet.contains(ud.getYearValue())) {
-        toRet.add(ud.getYearValue());
+      if (!toRet.contains(String.valueOf(ud.getYearValue()))) {
+        toRet.add(String.valueOf(ud.getYearValue()));
       }
     }
 
     if (playerEntry.isEmpty()) {
       return ResponseEntity.status(424).body(null);
     } else {
+      if (toRet.size() == 1) {
+        // clear the array if the only element is all
+        toRet.clear();
+      }
       return ResponseEntity.ok(toRet);
     }
   }
@@ -76,7 +81,7 @@ public class TeamEntryController {
                 ud.getPlayerName().substring(1, ud.getPlayerName().length() - 1),
                 ud.getTeam().substring(1, ud.getTeam().length() - 1),
                 ud.getYearValue(),
-                ud.getRankingValue(),
+                ud.getDisplayValue(),
                 ud.getLeague().toString());
 
         playerEntrys.add(toAdd);
@@ -112,7 +117,7 @@ public class TeamEntryController {
                 ud.getPlayerName().substring(1, ud.getPlayerName().length() - 1),
                 ud.getTeam().substring(1, ud.getTeam().length() - 1),
                 ud.getYearValue(),
-                ud.getRankingValue(),
+                ud.getDisplayValue(),
                 ud.getLeague().toString());
         playerEntrys.add(toAdd);
       }
@@ -120,6 +125,21 @@ public class TeamEntryController {
       return ResponseEntity.ok(teamEntry);
     } else {
       return ResponseEntity.status(424).body(null);
+    }
+  }
+
+  @Operation(
+      summary = "Get leagues of team",
+      description = "gets all the leagues that the given team has a team for")
+  @GetMapping("/leagues/{name}")
+  public ResponseEntity<List<League>> getTeamLeagues(@PathVariable String name) {
+    name = "\"" + name + "\"";
+    List<League> leagues =
+        service.getTeam(name).stream().map(UltiData::getLeague).distinct().toList();
+    if (leagues.isEmpty()) {
+      return ResponseEntity.status(424).body(null);
+    } else {
+      return ResponseEntity.ok(leagues);
     }
   }
 }
