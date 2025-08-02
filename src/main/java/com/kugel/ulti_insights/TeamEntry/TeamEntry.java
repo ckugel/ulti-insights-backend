@@ -10,27 +10,6 @@ public class TeamEntry {
   private short year;
   private League league;
 
-  /*
-  private static final HashMap<League, String> leagueName = new HashMap();
-
-  static {
-    leagueName.put(League.MENS_CLUB, "Men's Club");
-    leagueName.put(League.MENS_COLLEGE_D1, "Men's College - D1");
-    leagueName.put(League.MENS_COLLEGE_D3, "Men's College - D3");
-    leagueName.put(League.WOMENS_COLLEGE_D1, "Women's College - D1");
-    leagueName.put(League.WOMENS_COLLEGE_D3, "Women's College - D3");
-    leagueName.put(League.WOMENS_CLUB, "Women's Club");
-    leagueName.put(League.WOMENS_YCC_U17, "Women's ycc - U17");
-    leagueName.put(League.MENS_YCC_U17, "Men's ycc - U17");
-    leagueName.put(League.OTHER, "Other");
-    leagueName.put(League.WOMENS_YCC_U20, "Women's ycc - U20");
-    leagueName.put(League.MENS_YCC_U20, "Men's ycc - U20");
-    leagueName.put(League.MIXED_YCC_U20, "Mixed ycc - U20");
-    leagueName.put(League.MIXED_YCC_U17, "Mixed ycc - U17");
-    leagueName.put(League.MIXED_CLUB, "Mixed club");
-  }
-    */
-
   private List<PlayerEntry> players;
 
   public TeamEntry() {

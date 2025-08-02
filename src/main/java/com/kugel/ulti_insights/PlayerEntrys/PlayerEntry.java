@@ -7,15 +7,26 @@ public class PlayerEntry {
   private short year;
   private String league;
   private Double rankingValue;
+  private double yearValueTwo;
+  private double displayValue;
 
   public PlayerEntry() {}
 
-  public PlayerEntry(String name, String team, short year, Double rankingValue, String league) {
+  public PlayerEntry(
+      String name,
+      String team,
+      short year,
+      Double rankingValue,
+      String league,
+      double yearValueTwo,
+      double displayValue) {
     this.name = name;
     this.team = team;
     this.year = year;
     this.league = league;
     this.rankingValue = rankingValue;
+    this.yearValueTwo = yearValueTwo;
+    this.displayValue = displayValue;
   }
 
   public String getLeague() {
@@ -58,6 +69,22 @@ public class PlayerEntry {
     this.year = year;
   }
 
+  public double getDisplayValue() {
+    return this.displayValue;
+  }
+
+  public void setDisplayValue(double displayValue) {
+    this.displayValue = displayValue;
+  }
+
+  public double getYearValueTwo() {
+    return this.yearValueTwo;
+  }
+
+  public void setYearValueTwo(double yearValueTwo) {
+    this.yearValueTwo = yearValueTwo;
+  }
+
   @Override
   public String toString() {
     return "PlayerEntry{"
@@ -73,6 +100,10 @@ public class PlayerEntry {
         + league
         + ", rankingValue="
         + rankingValue
+        + ", yearValueTwo="
+        + yearValueTwo
+        + ", displayValue"
+        + displayValue
         + '}';
   }
 }

@@ -15,6 +15,21 @@ import org.springframework.stereotype.Component;
 public class StartupPopulator implements CommandLineRunner {
 
   @Autowired private UltiDataService service;
+  private static final HashMap<String, League> nameToLeague = new HashMap();
+
+  static {
+    nameToLeague.put("", MENS_COLLEGE_D1);
+    nameToLeague.put("", MENS_COLLEGE_D3);
+    nameToLeague.put("ClubMens", MENS_CLUB);
+    nameToLeague.put("ClubWomxns", WOMENS_CLUB);
+    nameToLeague.put("ClubMixed", MIXED_CLUB);
+
+
+  }
+
+    public League leagueFromStrings(String Division, String Gender) {
+	leagN
+    }
 
   @Override
   public void run(String... args) throws Exception {
@@ -154,6 +169,19 @@ public class StartupPopulator implements CommandLineRunner {
       System.out.println("could not open file: " + filename);
       System.out.println("Working dir: " + new File(".").getAbsolutePath());
       e.printStackTrace();
+    }
+
+    try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+      br.readLine();
+      while ((line = br.readLine()) != null) {
+        String[] data = line.split(delimiter);
+        String player = data[0];
+        String team = data[1];
+        String Year = Short.valueOf(data[2]);
+        String Division = data[3];
+        String Gender = data[4];
+      }
+    } catch (IOException e) {
     }
   }
 }
