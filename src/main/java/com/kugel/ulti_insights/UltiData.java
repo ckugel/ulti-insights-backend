@@ -1,166 +1,190 @@
 package com.kugel.ulti_insights;
 
+import com.kugel.ulti_insights.TeamEntry.TeamEntry;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
-import com.kugel.ulti_insights.League;
-import com.kugel.ulti_insights.TeamEntry.TeamEntry;
 
 @Entity
 public class UltiData {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private short yearValue;
-    private String tournament;
-    private short quarter;
-    private double yearValueTwo;
-    private short tier;
-    private double multiplier;
-    private Long finishPosition;
-    private String team;
-    private String playerName;
-    private double stat;
-    private double share;
-    private double rankingValue;
-    @Enumerated(EnumType.STRING)
-    private League league;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    public UltiData() {
-    }
+  private short yearValue;
+  private String tournament;
+  private short quarter;
+  private double yearValueTwo;
+  private short tier;
+  private double multiplier;
+  private Long finishPosition;
+  private String team;
+  private String playerName;
+  private double stat;
+  private double share;
+  private double rankingValue;
+  private double displayValue;
 
-    public UltiData(short yearValue, String Tournament, short quarter, double yearValueTwo, short tier, double multiplier, Long finishPosition, String team, String PlayerName, double stat, double share, double rankingValue, League league) {
-        this.yearValue = yearValue;
-        this.tournament = Tournament;
-        this.quarter = quarter;
-        this.yearValueTwo = yearValueTwo;
-        this.tier = tier;
-        this.multiplier = multiplier;
-        this.finishPosition = finishPosition;
-        this.team = team;
-        this.playerName = PlayerName;
-        this.stat = stat;
-        this.share = share;
-        this.rankingValue = rankingValue;
-        this.league = league;
-    }
+  @Enumerated(EnumType.STRING)
+  private League league;
 
-    public League getLeague() {
-        return league;
-    }
+  public UltiData() {}
 
-    public void setLeague(League league) {
-        this.league = league;
-    }
+  public UltiData(
+      short yearValue,
+      String Tournament,
+      short quarter,
+      double yearValueTwo,
+      short tier,
+      double multiplier,
+      Long finishPosition,
+      String team,
+      String PlayerName,
+      double stat,
+      double share,
+      double rankingValue,
+      League league,
+      double displayValue) {
+    this.yearValue = yearValue;
+    this.tournament = Tournament;
+    this.quarter = quarter;
+    this.yearValueTwo = yearValueTwo;
+    this.tier = tier;
+    this.multiplier = multiplier;
+    this.finishPosition = finishPosition;
+    this.team = team;
+    this.playerName = PlayerName;
+    this.stat = stat;
+    this.share = share;
+    this.rankingValue = rankingValue;
+    this.league = league;
+    this.displayValue = displayValue;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public League getLeague() {
+    return league;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public void setLeague(League league) {
+    this.league = league;
+  }
 
-    public short getYearValue() {
-        return yearValue;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public void setYearValue(short year_value) {
-        this.yearValue = year_value;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public double getYearValueTwo() {
-        return yearValueTwo;
-    }
+  public short getYearValue() {
+    return yearValue;
+  }
 
-    public void setYearValueTwo(double year_value_two) {
-        this.yearValueTwo = year_value_two;
-    }
+  public void setYearValue(short year_value) {
+    this.yearValue = year_value;
+  }
 
-    public String getTournament() {
-        return tournament;
-    }
+  public double getYearValueTwo() {
+    return yearValueTwo;
+  }
 
-    public void setTournament(String tournament) {
-        this.tournament = tournament;
-    }
+  public void setYearValueTwo(double year_value_two) {
+    this.yearValueTwo = year_value_two;
+  }
 
-    public short getQuarter() {
-        return quarter;
-    }
+  public String getTournament() {
+    return tournament;
+  }
 
-    public void setQuarter(short quarter) {
-        this.quarter = quarter;
-    }
+  public void setTournament(String tournament) {
+    this.tournament = tournament;
+  }
 
-    public short getTier() {
-        return tier;
-    }
+  public short getQuarter() {
+    return quarter;
+  }
 
-    public void setTier(short tier) {
-        this.tier = tier;
-    }
+  public void setQuarter(short quarter) {
+    this.quarter = quarter;
+  }
 
-    public double getMultiplier() {
-        return multiplier;
-    }
+  public short getTier() {
+    return tier;
+  }
 
-    public void setMultiplier(double multiplier) {
-        this.multiplier = multiplier;
-    }
+  public void setTier(short tier) {
+    this.tier = tier;
+  }
 
-    public Long getFinishPosition() {
-        return finishPosition;
-    }
+  public double getMultiplier() {
+    return multiplier;
+  }
 
-    public void setFinishPosition(Long finishPosition) {
-        this.finishPosition = finishPosition;
-    }
+  public void setMultiplier(double multiplier) {
+    this.multiplier = multiplier;
+  }
 
-    public String getTeam() {
-        return team;
-    }
+  public Long getFinishPosition() {
+    return finishPosition;
+  }
 
-    public void setTeam(String team) {
-        this.team = team;
-    }
+  public void setFinishPosition(Long finishPosition) {
+    this.finishPosition = finishPosition;
+  }
 
-    public String getPlayerName() {
-        return playerName;
-    }
+  public String getTeam() {
+    return team;
+  }
 
-    public void setPlayerName(String playerName) {
-        this.playerName = playerName;
-    }
+  public void setTeam(String team) {
+    this.team = team;
+  }
 
-    public double getStat() {
-        return stat;
-    }
+  public String getPlayerName() {
+    return playerName;
+  }
 
-    public void setStat(double stat) {
-        this.stat = stat;
-    }
+  public void setPlayerName(String playerName) {
+    this.playerName = playerName;
+  }
 
-    public double getShare() {
-        return share;
-    }
+  public double getStat() {
+    return stat;
+  }
 
-    public void setShare(double share) {
-        this.share = share;
-    }
+  public void setStat(double stat) {
+    this.stat = stat;
+  }
 
-    public double getRankingValue() {
-        return rankingValue;
-    }
+  public double getShare() {
+    return share;
+  }
 
-    public void setRankingValue(double rankingValue) {
-        this.rankingValue = rankingValue;
-    }
+  public void setShare(double share) {
+    this.share = share;
+  }
 
-    public TeamEntry getAsTeamEntry() {
-		return new TeamEntry(team, yearValue, null, league);
-	}
+  public double getRankingValue() {
+    return rankingValue;
+  }
+
+  public void setRankingValue(double rankingValue) {
+    this.rankingValue = rankingValue;
+  }
+
+  public TeamEntry getAsTeamEntry() {
+    return new TeamEntry(team, yearValue, null, league);
+  }
+
+  public void setDisplayValue(double displayValue) {
+    this.displayValue = displayValue;
+  }
+
+  public double getDisplayValue() {
+    return Math.round(this.displayValue);
+  }
 }
