@@ -1,5 +1,6 @@
-package com.kugel.ulti_insights;
+package com.kugel.ulti_insights.Models.UltiData;
 
+import com.kugel.ulti_insights.League;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,16 @@ public class UltiDataService {
     return repository.save(ultidata);
   }
 
+  public List<UltiData> saveAll(List<UltiData> ultidataList) {
+    return repository.saveAll(ultidataList);
+  }
+
   public boolean playerExists(String playerName) {
-    return !repository.findAllByPlayerNameIgnoreCase(playerName).isEmpty();
+    return !repository.findAllByNameIgnoreCase(playerName).isEmpty();
   }
 
   public List<UltiData> getPlayer(String playerName) {
-    return repository.findAllByPlayerNameIgnoreCase(playerName);
+    return repository.findAllByNameIgnoreCase(playerName);
   }
 
   public List<UltiData> getTeam(String teamName) {
@@ -43,5 +48,27 @@ public class UltiDataService {
 
   public List<UltiData> getTeamByLeagueAndName(String name, League league) {
     return repository.findByTeamIgnoreCaseAndLeague(name, league);
+  }
+
+  // New fast-path helpers using @Query projections
+
+  /** Distinct calendar years for a team name (case-insensitive). */
+  public List<Short> getDistinctYearsForTeam(String team) {
+    return repository.findDistinctYearsForTeam(team);
+  }
+
+  /** Distinct calendar years for a team name within a league. */
+  public List<Short> getDistinctYearsForTeamAndLeague(String team, League league) {
+    return repository.findDistinctYearsForTeamAndLeague(team, league);
+  }
+
+  /** Distinct leagues that have entries for a team (case-insensitive). */
+  public List<League> getDistinctLeaguesForTeam(String team) {
+    return repository.findDistinctLeaguesForTeam(team);
+  }
+
+  /** Distinct (league, year) pairs for a team name. */
+  public List<UltiDataRepository.LeagueYear> getDistinctLeagueYearsForTeam(String team) {
+    return repository.findDistinctLeagueYearsForTeam(team);
   }
 }

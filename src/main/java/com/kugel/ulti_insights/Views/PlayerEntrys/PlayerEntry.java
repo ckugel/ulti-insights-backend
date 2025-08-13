@@ -1,11 +1,13 @@
-package com.kugel.ulti_insights.PlayerEntrys;
+package com.kugel.ulti_insights.Views.PlayerEntrys;
+
+import com.kugel.ulti_insights.League;
 
 // Does not get saved in the database but is used for easy formatting back to the client
 public class PlayerEntry {
   private String name;
   private String team;
   private short year;
-  private String league;
+  private League league;
   private Double rankingValue;
   private double yearValueTwo;
   private double displayValue;
@@ -16,8 +18,8 @@ public class PlayerEntry {
       String name,
       String team,
       short year,
+      League league,
       Double rankingValue,
-      String league,
       double yearValueTwo,
       double displayValue) {
     this.name = name;
@@ -29,11 +31,11 @@ public class PlayerEntry {
     this.displayValue = displayValue;
   }
 
-  public String getLeague() {
+  public League getLeague() {
     return league;
   }
 
-  public void setLeague(String league) {
+  public void setLeague(League league) {
     this.league = league;
   }
 
