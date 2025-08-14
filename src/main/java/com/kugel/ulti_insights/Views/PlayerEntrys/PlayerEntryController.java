@@ -8,10 +8,7 @@ import com.kugel.ulti_insights.Models.UltiData.UltiDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +30,17 @@ public class PlayerEntryController {
   @Autowired private PlayerService playerService;
 
   @Operation(
-      summary = "Get player entry",
-      description = "Gets the entrys of the player in the database, has multiple players ")
+      summary = "Gets the graph data for the player entry",
+      description =
+          "Gets the entrys of the player in the database, has multiple players. Gets the data"
+              + " needed specifically for the graph view ")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "Success got player entry"),
-        @ApiResponse(responseCode = "424", description = "Player not found")
+        @ApiResponse(responseCode = "201", description = "Player not found")
       })
-  @GetMapping("/old/{username}")
+  @GetMapping("/graph/{username}")
   public ResponseEntity<List<PlayerEntry>> getPlayerEntryOld(@PathVariable String username) {
-    // No quoting, names are stored normalized
     if (service.playerExists(username)) {
       List<UltiData> playerEntry = service.getPlayer(username);
       List<PlayerEntry> playerEntrys = new ArrayList<PlayerEntry>(playerEntry.size());
@@ -60,7 +58,7 @@ public class PlayerEntryController {
       }
       return ResponseEntity.ok(playerEntrys);
     } else {
-      return ResponseEntity.status(424).body(null);
+      return ResponseEntity.status(201).body(null);
     }
   }
 
@@ -90,22 +88,22 @@ public class PlayerEntryController {
         entries.stream()
             .sorted(Comparator.comparing(UltiData::getYearValue))
             .forEach(
-                ud -> fromData.add(
-                    new PlayerEntry(
-                        ud.getName(),
-                        ud.getTeam(),
-                        ud.getYearValue(),
-                        ud.getLeague(),
-                        ud.getRankingValue(),
-                        ud.getYearValueTwo(),
-                        ud.getDisplayValue())));
+                ud ->
+                    fromData.add(
+                        new PlayerEntry(
+                            ud.getName(),
+                            ud.getTeam(),
+                            ud.getYearValue(),
+                            ud.getLeague(),
+                            ud.getRankingValue(),
+                            ud.getYearValueTwo(),
+                            ud.getDisplayValue())));
         return ResponseEntity.ok(fromData);
       }
       List<PlayerEntry> playerEntrys = new ArrayList<>(teamYears.size());
       for (TeamYears ty : teamYears) {
         short year = ty.getYearValue();
-        Double dv = player.getDisplayValueForYear(year);
-        double safeDisplay = dv != null ? dv : 0.0;
+        Double displayVal = Objects.requireNonNullElse(player.getDisplayValueForYear(year), 0d);
         PlayerEntry toAdd =
             new PlayerEntry(
                 player.getPlayerName(),
@@ -114,7 +112,7 @@ public class PlayerEntryController {
                 ty.getTeam().getLeague(),
                 player.getRankingValueForYear(year),
                 ty.getYearTwo(),
-                safeDisplay);
+                displayVal);
         playerEntrys.add(toAdd);
       }
       return ResponseEntity.ok(playerEntrys);
