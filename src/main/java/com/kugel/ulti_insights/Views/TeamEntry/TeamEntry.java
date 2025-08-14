@@ -1,7 +1,7 @@
-package com.kugel.ulti_insights.TeamEntry;
+package com.kugel.ulti_insights.Views.TeamEntry;
 
 import com.kugel.ulti_insights.League;
-import com.kugel.ulti_insights.PlayerEntrys.PlayerEntry;
+import com.kugel.ulti_insights.Views.PlayerEntrys.PlayerEntry;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +41,10 @@ public class TeamEntry {
 
   public List<PlayerEntry> getPlayers() {
     return players;
+  }
+
+  public void addPlayerEntry(PlayerEntry playerEntry) {
+    this.players.add(playerEntry);
   }
 
   public void setPlayers(List<PlayerEntry> players) {

@@ -1,88 +1,89 @@
 package com.kugel.ulti_insights.Search;
 
-import com.kugel.ulti_insights.UltiData;
-import com.kugel.ulti_insights.UltiDataService;
+import com.kugel.ulti_insights.Models.Player.Player;
+import com.kugel.ulti_insights.Models.Player.PlayerService;
+import com.kugel.ulti_insights.Models.Teams.TeamService;
+import com.kugel.ulti_insights.Models.Teams.Teams;
+import com.kugel.ulti_insights.Views.TeamSearchOption.TeamSearchOption;
+import io.swagger.v3.oas.annotations.Operation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kugel.ulti_insights.TeamEntry.TeamEntry;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-
 @RestController
 @RequestMapping("/search")
 public class SearchController {
 
-    @Autowired
-    private UltiDataService service;
+  @Autowired private TeamService teamService;
+  @Autowired private PlayerService playerService;
 
-    @GetMapping("/options")
-    public SearchOptions getSearchOptions() {
-        // get all unique teams and players
-        HashSet<String> players = new HashSet<>();
-        HashSet<TeamEntry> teams = new HashSet<>();
+  @GetMapping("/options")
+  @Operation(summary = "Gets all the players and teams in the database")
+  public SearchOptions getSearchOptions() {
+    // could maybe be cached later lol, I do not care about space complexity
 
-        // could maybe be cached later lol, I do not care about space complexity
+    List<String> playerList =
+        playerService.getAll().stream().map(Player::getPlayerName).collect(Collectors.toList());
+    List<Teams> teamList = teamService.getAll();
 
-        for (UltiData ud : service.getAll()) {
-	    if (!players.contains(ud.getPlayerName())) {
-		players.add(ud.getPlayerName());
-	    }
-	    if (!teams.contains(ud.getAsTeamEntry())) {
-		teams.add(ud.getAsTeamEntry());
-	    }
-        }
+    ArrayList<TeamSearchOption> tso = new ArrayList<>();
 
-        ArrayList<String> playerList = new ArrayList<>(players);
-        ArrayList<TeamEntry> teamList = new ArrayList<>(teams);
-
-        playerList.addAll(players);
-
-        teamList.addAll(teams);
-
-        return new SearchOptions(playerList, teamList);
+    for (Teams t : teamList) {
+      tso.add(new TeamSearchOption(t.getName(), t.getLeague()));
     }
 
-    @GetMapping()
-    public SearchOptions search(@RequestParam(required = false) String query) {
-        if (query == null || query.isEmpty()) {
-            return getSearchOptions();
-        }
-        query = query.toLowerCase();
-        HashSet<String> players = new HashSet<>();
-        HashSet<TeamEntry> teams = new HashSet<>();
+    return new SearchOptions(playerList, tso);
+  }
 
-        // could maybe be cached later lol, I do not care about space complexity
+  @Operation(summary = "Get a list of teams that match a search query")
+  @GetMapping("/teams")
+  public List<TeamSearchOption> searchTeams(@RequestParam(required = true) String query) {
+    query = query.toLowerCase();
 
-        for (UltiData ud : service.getAll()) {
-	    if (!players.contains(ud.getPlayerName())) {
-		players.add(ud.getPlayerName());
-	    }
-	    if (!teams.contains(ud.getAsTeamEntry())) {
-		teams.add(ud.getAsTeamEntry());
-	    }
-        }
+    List<TeamSearchOption> teams = new ArrayList<>();
 
-        ArrayList<String> playerList = new ArrayList<>();
-        ArrayList<TeamEntry> teamList = new ArrayList<>();
+    List<Teams> allTeams = teamService.getAll();
 
-        for (String player : players) {
-            if (player.toLowerCase().contains(query)) {
-                playerList.add(player);
-            }
-        }
-
-        for (TeamEntry team : teams) {
-            if (team.getTeamName().toLowerCase().contains(query)) {
-                teamList.add(team);
-            }
-        }
-
-        return new SearchOptions(playerList, teamList);
+    for (Teams t : allTeams) {
+      if (t.getName().toLowerCase().contains(query)) {
+        teams.add(new TeamSearchOption(t.getName(), t.getLeague()));
+      }
     }
+    return teams;
+  }
+
+  @Operation(summary = "Get a list of players that match a search query")
+  @GetMapping("/players")
+  public List<String> searchPlayers(@RequestParam(required = true) String query) {
+    query = query.toLowerCase();
+
+    List<String> players = new ArrayList<>();
+    List<Player> allPlayers = playerService.getAll();
+
+    for (Player p : allPlayers) {
+      if (p.getPlayerName().toLowerCase().contains(query)) {
+        players.add(p.getPlayerName());
+      }
+    }
+
+    return players;
+  }
+
+  @Operation(summary = "gets all the players and teams")
+  @GetMapping()
+  public SearchOptions search(@RequestParam(required = false) String query) {
+    if (query == null || query.isEmpty()) {
+      return getSearchOptions();
+    }
+
+    List<String> players = searchPlayers(query);
+    List<TeamSearchOption> teams = searchTeams(query);
+
+    return new SearchOptions(players, teams);
+  }
 }

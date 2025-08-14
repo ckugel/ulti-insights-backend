@@ -1,5 +1,12 @@
 package com.kugel.ulti_insights;
 
+import com.kugel.ulti_insights.Models.Player.Player;
+import com.kugel.ulti_insights.Models.Player.PlayerService;
+import com.kugel.ulti_insights.Models.TeamYears.TeamYears;
+import com.kugel.ulti_insights.Models.Teams.TeamService;
+import com.kugel.ulti_insights.Models.Teams.Teams;
+import com.kugel.ulti_insights.Models.UltiData.UltiData;
+import jakarta.transaction.Transactional;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -7,113 +14,154 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile({"dev", "test"})
 public class StartupPopulator implements CommandLineRunner {
 
-  @Autowired private UltiDataService service;
-  private static final HashMap<String, League> nameToLeague = new HashMap();
+  @Autowired private PlayerService playerService;
+  @Autowired private TeamService teamService;
+
+  private static final Logger log = LoggerFactory.getLogger(StartupPopulator.class);
+
+  private static final HashMap<String, League> nameToLeague = new HashMap<>();
 
   static {
-    nameToLeague.put("", MENS_COLLEGE_D1);
-    nameToLeague.put("", MENS_COLLEGE_D3);
-    nameToLeague.put("ClubMens", MENS_CLUB);
-    nameToLeague.put("ClubWomxns", WOMENS_CLUB);
-    nameToLeague.put("ClubMixed", MIXED_CLUB);
-
-
+    // Preserve existing keys for backward compatibility
+    nameToLeague.put("CollegeWomxns", League.WOMENS_COLLEGE);
+    nameToLeague.put("CollegeMens", League.MENS_COLLEGE);
+    nameToLeague.put("ClubMens", League.MENS_CLUB);
+    nameToLeague.put("ClubWomxns", League.WOMENS_CLUB);
+    nameToLeague.put("ClubMixed", League.MIXED_CLUB);
+    nameToLeague.put("collegewomxns", League.WOMENS_COLLEGE);
+    nameToLeague.put("collegemens", League.MENS_COLLEGE);
+    nameToLeague.put("clubmens", League.MENS_CLUB);
+    nameToLeague.put("clubwomxns", League.WOMENS_CLUB);
+    nameToLeague.put("clubmixed", League.MIXED_CLUB);
+    // Common variants
+    nameToLeague.put("CollegeWomens", League.WOMENS_COLLEGE);
+    nameToLeague.put("ClubWomens", League.WOMENS_CLUB);
+    nameToLeague.put("collegewomens", League.WOMENS_COLLEGE);
+    nameToLeague.put("clubwomens", League.WOMENS_CLUB);
   }
 
-    public League leagueFromStrings(String Division, String Gender) {
-	leagN
+  private static String unquote(String s) {
+    if (s == null) return null;
+    String t = s.trim();
+    if (t.length() >= 2 && ((t.startsWith("\"") && t.endsWith("\"")) || (t.startsWith("'") && t.endsWith("'")))) {
+      return t.substring(1, t.length() - 1).trim();
+    }
+    return t;
+  }
+
+  // Normalize token by stripping non-letters and lowercasing
+  private static String normalizeToken(String s) {
+    if (s == null) return "";
+    return s.replaceAll("[^A-Za-z]", "").toLowerCase();
+  }
+
+  // Remove trailing/leading division descriptors from team names (Men's, Women's, Womxn, Open, etc.)
+  private static String normalizeTeamName(String name) {
+    if (name == null) return null;
+    String t = unquote(name).trim();
+    // Remove division in parentheses at end: e.g., "Iowa State (Men's)"
+    t = t.replaceAll("(?i)\\s*\\((men|men's|mens|women|women's|womens|womxn|womxns|open)\\)\\s*$", "");
+    // Remove trailing dash/space followed by division: e.g., "Iowa State - Men's", "Iowa State Women"
+    t = t.replaceAll("(?i)[\\s\\-–—]*\\b(men|men's|mens|women|women's|womens|womxn|womxns|open)\\b\\s*$", "");
+    // Remove leading division if present: e.g., "Men's Iowa State"
+    t = t.replaceAll("(?i)^\\b(men|men's|mens|women|women's|womens|womxn|womxns|open)\\b[\\s\\-–—]*", "");
+    // Collapse multiple spaces
+    t = t.replaceAll("\\s{2,}", " ").trim();
+    return t;
+  }
+
+  // Parse league from two tokens like ("College","Men's") or ("Club","Open")
+  private static League parseLeagueTokens(String t1, String t2) {
+    String a = normalizeToken(unquote(t1));
+    String b = normalizeToken(unquote(t2));
+
+    boolean isCollege = a.contains("college") || b.contains("college");
+    boolean isClub = a.contains("club") || b.contains("club");
+
+    // Determine division gender/category from the second token mostly
+    String cat = (b.isEmpty() ? a : b);
+    if (cat.contains("mixed")) {
+      return isCollege ? League.OTHER : League.MIXED_CLUB; // no College Mixed in this dataset
+    }
+    if (cat.contains("womxn") || cat.contains("women") || cat.contains("womens") || cat.contains("womxns")) {
+      return isCollege ? League.WOMENS_COLLEGE : League.WOMENS_CLUB;
+    }
+    if (cat.contains("men") || cat.contains("mens") || cat.contains("open")) {
+      return isCollege ? League.MENS_COLLEGE : League.MENS_CLUB;
     }
 
+    // Fallback to legacy mapping if present
+    League legacy = nameToLeague.get(unquote(t1) + unquote(t2));
+    if (legacy == null) legacy = nameToLeague.get((unquote(t1) + unquote(t2)).toLowerCase());
+
+    if (legacy != null) return legacy;
+
+    return League.OTHER;
+  }
+
+  // Parse league from tournament string with robust keyword checks
+  private static League parseLeagueFromTournament(String tournament) {
+    String t = tournament == null ? "" : tournament.toLowerCase();
+    boolean isCollege = t.contains("college");
+    boolean isClub = t.contains("club");
+
+    if (t.contains("mixed")) {
+      return isClub ? League.MIXED_CLUB : League.OTHER;
+    }
+    if (t.contains("womxn") || t.contains("women") || t.contains("women's") || t.contains("womens") || t.contains("womxns")) {
+      return isCollege ? League.WOMENS_COLLEGE : (isClub ? League.WOMENS_CLUB : League.OTHER);
+    }
+    if (t.contains("men") || t.contains("men's") || t.contains("mens") || t.contains("open")) {
+      return isCollege ? League.MENS_COLLEGE : (isClub ? League.MENS_CLUB : League.OTHER);
+    }
+    // If college/club present but no gender keyword, default to OTHER to avoid misclassification
+    return League.OTHER;
+  }
+
   @Override
-  public void run(String... args) throws Exception {
+  @Transactional
+  public void run(String... args) {
     String filename = "src/main/resources/data.csv";
     String line;
     String delimiter = ",";
 
-    HashMap<String, List<UltiData>> nameToData = new HashMap();
-
+    HashMap<String, List<UltiData>> nameToData = new HashMap<>();
     ArrayList<UltiData> toAdd = new ArrayList<>();
+    HashMap<String, Player> playersToSave = new HashMap<>();
+
+    log.info("Starting csv reading");
 
     try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-      // skip first line as it is the header
       br.readLine();
-      // read the csv into a ultidata object and save it to the database.
-      // the csv header is given by:
-      // "","Year","Tournament","Quarter","Year2","Tier","Multiplier","Finish.Position","Team","Player","Stat","Share","Rank.Value"
       while ((line = br.readLine()) != null) {
         String[] data = line.split(delimiter);
 
         short year = Short.parseShort(data[1]);
         String tournament = data[2];
-        League league;
-        if (tournament.contains("D1")) {
-          // can be Mens or womens
-          if (tournament.contains("Men's")) {
-            league = League.MENS_COLLEGE_D1;
-          } else {
-            league = League.WOMENS_COLLEGE_D1;
-          }
-        } else if (tournament.contains("D3")) {
-          // can be Mens or womens
-          if (tournament.contains("Men's")) {
-            league = League.MENS_COLLEGE_D3;
-          } else {
-            league = League.WOMENS_COLLEGE_D3;
-          }
-        } else if (tournament.contains("Club")) {
-          // Can be Mens, Womens, Mixed
-          if (tournament.contains("Men's")) {
-            league = League.MENS_CLUB;
-          } else if (tournament.contains("Women's")) {
-            league = League.WOMENS_CLUB;
-          } else {
-            league = League.MIXED_CLUB;
-          }
-        } else if (tournament.contains("YCC")) {
-          // can be U20, U17
-          if (tournament.contains("U-20")) {
-            // can be Mens, Womens, Mixed
-            if (tournament.contains("Boys")) {
-              league = League.MENS_YCC_U20;
-            } else if (tournament.contains("Girls")) {
-              league = League.WOMENS_YCC_U20;
-            } else {
-              league = League.MIXED_YCC_U20;
-            }
-          } else if (tournament.contains("U-17")) {
-            // can be Mens, Womens, Mixed
-            if (tournament.contains("Boys")) {
-              league = League.MENS_YCC_U17;
-            } else if (tournament.contains("Girls")) {
-              league = League.WOMENS_YCC_U17;
-            } else {
-              league = League.MIXED_YCC_U17;
-            }
-          } else {
-            league = League.OTHER;
-          }
-        } else {
-          league = League.OTHER;
-        }
+        League league = parseLeagueFromTournament(tournament);
         short quarter = Short.parseShort(data[3]);
         double year2 = Double.parseDouble(data[4]);
         short tier = Short.parseShort(data[5]);
         double multiplier = Double.parseDouble(data[6]);
         Long finishPosition = Long.parseLong(data[7]);
-        String team = data[8];
-        String playerName = data[9];
-        // this is because of names with delimiters in the name, not a good fix tbh
+        String team = normalizeTeamName(data[8]);
+        String playerName = unquote(data[9]);
         int current = 9;
         if (data.length > 13) {
           current += data.length - 13;
-          // either fool proof or foolish
         }
         current++;
         double stat = Double.parseDouble(data[current]);
@@ -138,50 +186,148 @@ public class StartupPopulator implements CommandLineRunner {
                 rankingValue,
                 league,
                 0);
+
+        // Reuse or create a Player instance for this name and attach the UltiData
+        Player player =
+            playersToSave.getOrDefault(
+                playerName, new Player(playerName, new ArrayList<>(), new ArrayList<>()));
+        player.addUltiDataEntry(ultidata);
+
         toAdd.add(ultidata);
-        if (nameToData.containsKey(ultidata.getPlayerName())) {
-          nameToData.get(ultidata.getPlayerName()).add(ultidata);
+        playersToSave.put(player.getPlayerName(), player);
+
+        if (nameToData.containsKey(ultidata.getName())) {
+          nameToData.get(ultidata.getName()).add(ultidata);
         } else {
           ArrayList<UltiData> arr = new ArrayList<>();
           arr.add(ultidata);
-          nameToData.put(ultidata.getPlayerName(), arr);
+          nameToData.put(ultidata.getName(), arr);
         }
       }
 
+      log.info("finished reading the csv");
+
       for (UltiData ud : toAdd) {
-        /**
-         * Gets a ranking value from a year, team, and league. The ranking value is calculated by
-         * summing the ranking values of that player leading up to that point. TODO: RESEARCH: Does
-         * player name and yearValueTwo form a unique key?
-         */
         double displayValue = ud.getRankingValue();
-        for (UltiData ud2 : nameToData.get(ud.getPlayerName())) {
+        for (UltiData ud2 : nameToData.get(ud.getName())) {
           if (ud2.getYearValueTwo() < ud.getYearValueTwo()) {
             displayValue += ud2.getRankingValue();
           }
         }
-
         ud.setDisplayValue(displayValue);
-        service.saveUltiData(ud);
       }
 
+      // Save all players and their UltiData at once via cascade
+      playerService.saveAll(new ArrayList<>(playersToSave.values()));
+
+      log.info("finished all saves");
     } catch (IOException e) {
-      System.out.println("could not open file: " + filename);
-      System.out.println("Working dir: " + new File(".").getAbsolutePath());
-      e.printStackTrace();
+      log.error("Could not open file: {} (wd: {})", filename, new File(".").getAbsolutePath(), e);
     }
 
-    try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+    log.info("Now reading roster");
+
+    // Roster database parsing and building the Teams and TeamYears
+    String rosterFile = "src/main/resources/rosterFile.csv";
+    ArrayList<Player> rosterPlayersToCreate = new ArrayList<>();
+
+    try (BufferedReader br = new BufferedReader(new FileReader(rosterFile))) {
       br.readLine();
+      List<String[]> rosterLines = new ArrayList<>();
       while ((line = br.readLine()) != null) {
-        String[] data = line.split(delimiter);
-        String player = data[0];
-        String team = data[1];
-        String Year = Short.valueOf(data[2]);
-        String Division = data[3];
-        String Gender = data[4];
+        rosterLines.add(line.split(delimiter));
       }
+      log.info("done reading roster");
+
+      // Preload caches
+      HashMap<String, Teams> teamCache = new HashMap<>();
+      HashMap<String, Player> playerCache = new HashMap<>();
+      HashMap<String, TeamYears> teamYearCache = new HashMap<>();
+
+      // Bulk fetch all existing players referenced in the roster to avoid per-row lookups
+      Set<String> rosterPlayerNames =
+          rosterLines.stream().map(arr -> unquote(arr[0])).collect(Collectors.toSet());
+      List<Player> existingPlayers = playerService.findAllByNamesIgnoreCase(rosterPlayerNames);
+      for (Player p : existingPlayers) {
+        playerCache.put(p.getPlayerName(), p);
+      }
+      // Create missing players in-memory and queue them for a single batch save
+      for (String pname : rosterPlayerNames) {
+        if (!playerCache.containsKey(pname)) {
+          Player np = new Player(pname, new ArrayList<>(), new ArrayList<>());
+          rosterPlayersToCreate.add(np);
+          playerCache.put(pname, np);
+        }
+      }
+
+      // Persist any newly created players BEFORE associating them to TeamYears
+      if (!rosterPlayersToCreate.isEmpty()) {
+        List<Player> managedNewPlayers = playerService.saveAll(rosterPlayersToCreate);
+        // Refresh cache with managed instances returned by saveAll
+        for (Player mp : managedNewPlayers) {
+          playerCache.put(mp.getPlayerName(), mp);
+        }
+      }
+
+      // Now build Teams/TeamYears and associate managed Player instances
+      for (String[] data : rosterLines) {
+        String playerName = unquote(data[0]);
+        String teamName = normalizeTeamName(data[1]);
+        short year = (short) Double.parseDouble(data[2]);
+        League league = parseLeagueTokens(data[3], data[4]);
+        if (league == null || league == League.OTHER) {
+          log.warn("Unknown league mapping for roster row: team='{}', player='{}', rawTokens='{}','{}'", teamName, playerName, data[3], data[4]);
+          continue; // skip invalid/unknown league rows to prevent cross-division lumping
+        }
+
+        String teamKey = teamName + league;
+        Teams team = teamCache.computeIfAbsent(teamKey, k -> new Teams(teamName, new ArrayList<>(), league));
+
+        String teamYearKey = teamKey + year;
+        TeamYears teamYear = teamYearCache.get(teamYearKey);
+        if (teamYear == null) {
+          if (team.getTeamYears() != null) {
+            for (TeamYears ty : team.getTeamYears()) {
+              if (ty.getYearValue() == year) {
+                teamYear = ty;
+                break;
+              }
+            }
+          }
+          if (teamYear == null) {
+            teamYear = new TeamYears(year, team, year);
+            if (team.getTeamYears() == null) {
+              team.setTeamYears(new ArrayList<>());
+            }
+            team.getTeamYears().add(teamYear);
+          }
+          teamYearCache.put(teamYearKey, teamYear);
+        }
+
+        // Get Player from cache (managed instance)
+        Player player = playerCache.get(playerName);
+        if (player == null) {
+          // Fallback (should not happen due to preloading)
+          player = new Player(playerName, new ArrayList<>(), new ArrayList<>());
+          Player managed = playerService.savePlayer(player);
+          playerCache.put(playerName, managed);
+          player = managed;
+        }
+
+        // Link both sides using helpers
+        teamYear.addPlayer(player);
+      }
+
+      // Serialize Teams (cascades to TeamYears). TeamYears -> players does not PERSIST, only MERGE.
+      ArrayList<Teams> teamsToSave = new ArrayList<>(teamCache.values());
+
+      log.info("now saving all");
+      teamService.saveAll(teamsToSave);
+
     } catch (IOException e) {
+      log.error("Could not open file: {} (wd: {})", rosterFile, new File(".").getAbsolutePath(), e);
     }
+
+    log.info("Done saving data");
   }
 }
