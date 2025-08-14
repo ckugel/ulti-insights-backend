@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.kugel</groupId>
-	<artifactId>ulti-insights</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>ulti-insights</name>
+	<artifactId>stadisticts</artifactId>
+	<version>1.0</version>
+	<name>stadisticts</name>
 	<description>Ulti Insights is a United State Ultimate frisbee based stats sight for insights into players</description>
 	<url/>
 	<licenses>
