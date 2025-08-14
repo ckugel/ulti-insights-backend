@@ -68,19 +68,42 @@ public class StartupPopulator implements CommandLineRunner {
     return s.replaceAll("[^A-Za-z]", "").toLowerCase();
   }
 
-  // Remove trailing/leading division descriptors from team names (Men's, Women's, Womxn, Open, etc.)
-  private static String normalizeTeamName(String name) {
-    if (name == null) return null;
-    String t = unquote(name).trim();
-    // Remove division in parentheses at end: e.g., "Iowa State (Men's)"
-    t = t.replaceAll("(?i)\\s*\\((men|men's|mens|women|women's|womens|womxn|womxns|open)\\)\\s*$", "");
-    // Remove trailing dash/space followed by division: e.g., "Iowa State - Men's", "Iowa State Women"
-    t = t.replaceAll("(?i)[\\s\\-–—]*\\b(men|men's|mens|women|women's|womens|womxn|womxns|open)\\b\\s*$", "");
-    // Remove leading division if present: e.g., "Men's Iowa State"
-    t = t.replaceAll("(?i)^\\b(men|men's|mens|women|women's|womens|womxn|womxns|open)\\b[\\s\\-–—]*", "");
-    // Collapse multiple spaces
-    t = t.replaceAll("\\s{2,}", " ").trim();
-    return t;
+  /**
+   * Normalizes team names by removing gender/division suffixes
+   * @param teamName the original team name
+   * @return normalized team name without gender suffixes
+   */
+  public static String normalizeTeamName(String teamName) {
+    if (teamName == null || teamName.trim().isEmpty()) {
+      return teamName;
+    }
+
+    String normalized = teamName.trim();
+
+    // Remove common gender/division suffixes (case insensitive)
+    String[] suffixesToRemove = {
+      "\\s+Men's?\\s*$",
+      "\\s+Women's?\\s*$",
+      "\\s+Womxn'?s?\\s*$",
+      "\\s+Mixed\\s*$",
+      "\\s+Open\\s*$",
+      "\\s+College\\s*$",
+      "\\s+Club\\s*$",
+      "\\s+Ultimate\\s*$",
+      "\\s+Frisbee\\s*$",
+      "\\s+\\(Men\\)\\s*$",
+      "\\s+\\(Women\\)\\s*$",
+      "\\s+\\(Mixed\\)\\s*$",
+      "\\s+\\(Open\\)\\s*$",
+      "\\s+-\\s*Men's?\\s*$",
+      "\\s+-\\s*Women's?\\s*$"
+    };
+
+    for (String suffix : suffixesToRemove) {
+      normalized = normalized.replaceAll("(?i)" + suffix, "");
+    }
+
+    return normalized.trim();
   }
 
   // Parse league from two tokens like ("College","Men's") or ("Club","Open")
