@@ -36,27 +36,28 @@ public class StartupPopulator implements CommandLineRunner {
 
   static {
     // Preserve existing keys for backward compatibility
-    nameToLeague.put("CollegeWomxns", League.WOMENS_COLLEGE);
-    nameToLeague.put("CollegeMens", League.MENS_COLLEGE);
-    nameToLeague.put("ClubMens", League.MENS_CLUB);
-    nameToLeague.put("ClubWomxns", League.WOMENS_CLUB);
+    nameToLeague.put("CollegeWomxns", League.WOMXNS_COLLEGE);
+    nameToLeague.put("CollegeMens", League.OPEN_COLLEGE);
+    nameToLeague.put("ClubMens", League.OPEN_CLUB);
+    nameToLeague.put("ClubWomxns", League.WOMXNS_CLUB);
     nameToLeague.put("ClubMixed", League.MIXED_CLUB);
-    nameToLeague.put("collegewomxns", League.WOMENS_COLLEGE);
-    nameToLeague.put("collegemens", League.MENS_COLLEGE);
-    nameToLeague.put("clubmens", League.MENS_CLUB);
-    nameToLeague.put("clubwomxns", League.WOMENS_CLUB);
+    nameToLeague.put("collegewomxns", League.WOMXNS_COLLEGE);
+    nameToLeague.put("collegemens", League.OPEN_COLLEGE);
+    nameToLeague.put("clubmens", League.OPEN_CLUB);
+    nameToLeague.put("clubwomxns", League.WOMXNS_CLUB);
     nameToLeague.put("clubmixed", League.MIXED_CLUB);
     // Common variants
-    nameToLeague.put("CollegeWomens", League.WOMENS_COLLEGE);
-    nameToLeague.put("ClubWomens", League.WOMENS_CLUB);
-    nameToLeague.put("collegewomens", League.WOMENS_COLLEGE);
-    nameToLeague.put("clubwomens", League.WOMENS_CLUB);
+    nameToLeague.put("CollegeWomens", League.WOMXNS_COLLEGE);
+    nameToLeague.put("ClubWomens", League.WOMXNS_CLUB);
+    nameToLeague.put("collegewomens", League.WOMXNS_COLLEGE);
+    nameToLeague.put("clubwomens", League.WOMXNS_CLUB);
   }
 
   private static String unquote(String s) {
     if (s == null) return null;
     String t = s.trim();
-    if (t.length() >= 2 && ((t.startsWith("\"") && t.endsWith("\"")) || (t.startsWith("'") && t.endsWith("'")))) {
+    if (t.length() >= 2
+        && ((t.startsWith("\"") && t.endsWith("\"")) || (t.startsWith("'") && t.endsWith("'")))) {
       return t.substring(1, t.length() - 1).trim();
     }
     return t;
@@ -70,6 +71,7 @@ public class StartupPopulator implements CommandLineRunner {
 
   /**
    * Normalizes team names by removing gender/division suffixes
+   *
    * @param teamName the original team name
    * @return normalized team name without gender suffixes
    */
@@ -88,6 +90,8 @@ public class StartupPopulator implements CommandLineRunner {
       "\\s+Mixed\\s*$",
       "\\s+Open\\s*$",
       "\\s+College\\s*$",
+      "\\s+Mens||s*$",
+      "\\s+Womens||s*$",
       "\\s+Club\\s*$",
       "\\s+Ultimate\\s*$",
       "\\s+Frisbee\\s*$",
@@ -112,18 +116,20 @@ public class StartupPopulator implements CommandLineRunner {
     String b = normalizeToken(unquote(t2));
 
     boolean isCollege = a.contains("college") || b.contains("college");
-    boolean isClub = a.contains("club") || b.contains("club");
 
     // Determine division gender/category from the second token mostly
     String cat = (b.isEmpty() ? a : b);
     if (cat.contains("mixed")) {
       return isCollege ? League.OTHER : League.MIXED_CLUB; // no College Mixed in this dataset
     }
-    if (cat.contains("womxn") || cat.contains("women") || cat.contains("womens") || cat.contains("womxns")) {
-      return isCollege ? League.WOMENS_COLLEGE : League.WOMENS_CLUB;
+    if (cat.contains("womxn")
+        || cat.contains("women")
+        || cat.contains("womens")
+        || cat.contains("womxns")) {
+      return isCollege ? League.WOMXNS_COLLEGE : League.WOMXNS_CLUB;
     }
     if (cat.contains("men") || cat.contains("mens") || cat.contains("open")) {
-      return isCollege ? League.MENS_COLLEGE : League.MENS_CLUB;
+      return isCollege ? League.OPEN_COLLEGE : League.OPEN_CLUB;
     }
 
     // Fallback to legacy mapping if present
@@ -144,11 +150,15 @@ public class StartupPopulator implements CommandLineRunner {
     if (t.contains("mixed")) {
       return isClub ? League.MIXED_CLUB : League.OTHER;
     }
-    if (t.contains("womxn") || t.contains("women") || t.contains("women's") || t.contains("womens") || t.contains("womxns")) {
-      return isCollege ? League.WOMENS_COLLEGE : (isClub ? League.WOMENS_CLUB : League.OTHER);
+    if (t.contains("womxn")
+        || t.contains("women")
+        || t.contains("women's")
+        || t.contains("womens")
+        || t.contains("womxns")) {
+      return isCollege ? League.WOMXNS_COLLEGE : (isClub ? League.WOMXNS_CLUB : League.OTHER);
     }
     if (t.contains("men") || t.contains("men's") || t.contains("mens") || t.contains("open")) {
-      return isCollege ? League.MENS_COLLEGE : (isClub ? League.MENS_CLUB : League.OTHER);
+      return isCollege ? League.OPEN_COLLEGE : (isClub ? League.OPEN_CLUB : League.OTHER);
     }
     // If college/club present but no gender keyword, default to OTHER to avoid misclassification
     return League.OTHER;
@@ -299,12 +309,18 @@ public class StartupPopulator implements CommandLineRunner {
         short year = (short) Double.parseDouble(data[2]);
         League league = parseLeagueTokens(data[3], data[4]);
         if (league == null || league == League.OTHER) {
-          log.warn("Unknown league mapping for roster row: team='{}', player='{}', rawTokens='{}','{}'", teamName, playerName, data[3], data[4]);
+          log.warn(
+              "Unknown league mapping for roster row: team='{}', player='{}', rawTokens='{}','{}'",
+              teamName,
+              playerName,
+              data[3],
+              data[4]);
           continue; // skip invalid/unknown league rows to prevent cross-division lumping
         }
 
         String teamKey = teamName + league;
-        Teams team = teamCache.computeIfAbsent(teamKey, k -> new Teams(teamName, new ArrayList<>(), league));
+        Teams team =
+            teamCache.computeIfAbsent(teamKey, k -> new Teams(teamName, new ArrayList<>(), league));
 
         String teamYearKey = teamKey + year;
         TeamYears teamYear = teamYearCache.get(teamYearKey);

@@ -5,9 +5,9 @@ import com.kugel.ulti_insights.Models.Player.Player;
 import com.kugel.ulti_insights.Models.TeamYears.TeamYears;
 import com.kugel.ulti_insights.Models.TeamYears.TeamYearsService;
 import com.kugel.ulti_insights.Models.Teams.TeamService;
-import com.kugel.ulti_insights.Views.PlayerEntrys.PlayerEntry;
 import com.kugel.ulti_insights.Models.UltiData.UltiDataRepository;
 import com.kugel.ulti_insights.Models.UltiData.UltiDataService;
+import com.kugel.ulti_insights.Views.PlayerEntrys.PlayerEntry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/team")
+@RequestMapping("/api/team")
 public class TeamEntryController {
 
   @Autowired private TeamService service;
@@ -65,8 +65,7 @@ public class TeamEntryController {
     return ResponseEntity.ok(toRet);
   }
 
-  public List<TeamEntry> makeTeamEntrysFromTeamYears(
-      List<TeamYears> teamYears, String teamName) {
+  public List<TeamEntry> makeTeamEntrysFromTeamYears(List<TeamYears> teamYears, String teamName) {
     List<TeamEntry> toRet = new ArrayList<>();
     for (TeamYears ty : teamYears) {
       League resolvedLeague = ty.getTeam().getLeague();
@@ -126,9 +125,7 @@ public class TeamEntryController {
   @GetMapping("/{name}/{year}")
   @Transactional(readOnly = true)
   public ResponseEntity<TeamEntry> getTeamEntryYear(
-      @PathVariable String name,
-      @PathVariable short year,
-      @RequestParam League league) {
+      @PathVariable String name, @PathVariable short year, @RequestParam League league) {
     Optional<TeamYears> teamYearOpt =
         teamYearsService.getTeamByNameAndLeagueAndYear(name, year, league);
     if (teamYearOpt.isEmpty()) {
@@ -162,9 +159,7 @@ public class TeamEntryController {
   public ResponseEntity<List<LeagueYearDTO>> getLeagueYears(@PathVariable String name) {
     List<UltiDataRepository.LeagueYear> pairs = ultiDataService.getDistinctLeagueYearsForTeam(name);
     List<LeagueYearDTO> dto =
-        pairs.stream()
-            .map(p -> new LeagueYearDTO(p.getLeague(), p.getYear()))
-            .toList();
+        pairs.stream().map(p -> new LeagueYearDTO(p.getLeague(), p.getYear())).toList();
     // Add pairs from TeamYears as well
     List<LeagueYearDTO> teamYearDTOs =
         teamYearsService.getLeagueYearsByTeamName(name).stream()
