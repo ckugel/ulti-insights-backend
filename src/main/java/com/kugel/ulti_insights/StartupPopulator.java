@@ -243,8 +243,10 @@ public class StartupPopulator implements CommandLineRunner {
       for (UltiData ud : toAdd) {
         double displayValue = ud.getRankingValue();
         for (UltiData ud2 : nameToData.get(ud.getName())) {
-          if (ud2.getYearValueTwo() < ud.getYearValueTwo()) {
-            displayValue += ud2.getRankingValue();
+          if (ud2.getYearValueTwo() > 0) {
+            if (ud2.getYearValueTwo() < ud.getYearValueTwo()) {
+              displayValue += ud2.getRankingValue();
+            }
           }
         }
         ud.setDisplayValue(displayValue);
