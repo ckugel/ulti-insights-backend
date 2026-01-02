@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: stadisticts
+
+  datasource:
+    url: jdbc:h2:file:./data/stadisticts;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: false  # Disable in production for security
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Don't auto-modify schema in production
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        format_sql: false
+
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.kugel.ulti_insights: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.h2: WARN
+  file:
+    name: logs/stadisticts.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30

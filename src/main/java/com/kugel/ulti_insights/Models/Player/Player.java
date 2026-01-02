@@ -5,6 +5,8 @@ import com.kugel.ulti_insights.Models.UltiData.UltiData;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -119,9 +121,7 @@ public class Player {
     this.teamYears = teamYears;
   }
 
-  /**
-   * Utility to link a TeamYears to this Player and keep both sides in sync.
-   */
+  /** Utility to link a TeamYears to this Player and keep both sides in sync. */
   public void addTeamYear(TeamYears teamYear) {
     if (this.teamYears == null) this.teamYears = new ArrayList<>();
     if (!this.teamYears.contains(teamYear)) this.teamYears.add(teamYear);
@@ -139,15 +139,25 @@ public class Player {
    * @param year the year to look up
    * @return the display value for the year, or null if not found
    */
-  public Double getDisplayValueForYear(Short year) {
+  public Double getDisplayValueForYear(short year) {
     if (entries == null || entries.isEmpty()) {
       return null;
+    }
+
+    UltiData minYearEntry = Collections.min(entries, Comparator.comparing(UltiData::getYearValue));
+    UltiData maxYearEntry = Collections.max(entries, Comparator.comparing(UltiData::getYearValue));
+
+    if (year < minYearEntry.getYearValue()) {
+      return 0d;
+    }
+    if (year > maxYearEntry.getYearValue()) {
+      return maxYearEntry.getDisplayValue();
     }
     return entries.stream()
         .filter(e -> e.getYearValue() == year)
         .map(UltiData::getDisplayValue)
         .findFirst()
-        .orElse(entries.getLast().getDisplayValue());
+        .orElse(0d);
   }
 
   /**
@@ -178,9 +188,7 @@ public class Player {
         + "\n}";
   }
 
-  /**
-   * Equality is based on the immutable primary key (playerName).
-   */
+  /** Equality is based on the immutable primary key (playerName). */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

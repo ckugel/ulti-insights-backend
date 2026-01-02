@@ -1,10 +1,10 @@
 package com.kugel.ulti_insights;
 
 public enum League {
-  MENS_COLLEGE,
-  WOMENS_COLLEGE,
+  OPEN_COLLEGE,
+  WOMXNS_COLLEGE,
   MIXED_CLUB,
-  MENS_CLUB,
-  WOMENS_CLUB,
+  OPEN_CLUB,
+  WOMXNS_CLUB,
   OTHER,
 }

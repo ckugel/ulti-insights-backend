@@ -1,6 +1,6 @@
-# Ulti Insights Backend
+# Stadisticts (backend)
 
-Ulti Insights is a Spring Boot REST API that aggregates ultimate frisbee player and team statistics. It ingests CSV data at startup, normalizes team and league info, and exposes endpoints to query players, teams, seasons, and leagues.
+Stadisticts is a Spring Boot REST API that aggregates ultimate frisbee player and team statistics. It ingests CSV data at startup, normalizes team and league info, and exposes endpoints to query players, teams, seasons, and leagues.
 
 ## Key features
 - CSV ingestion on startup (dev/test profiles) from src/main/resources/data.csv and rosterFile.csv
@@ -15,12 +15,12 @@ Ulti Insights is a Spring Boot REST API that aggregates ultimate frisbee player 
 - Maven wrapper (mvnw)
 
 ## Run locally
-Requirements: Java 17+ and Maven (or use the Maven wrapper provided).
+Requirements: Java 21 (Temurin) and Maven (or use the Maven wrapper provided).
 
 - Start the API with the dev profile to seed sample data:
   - Unix: `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`
   - Windows: `mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev`
-- Server listens on http://localhost:8080 (CORS is configured for a frontend on 3000).
+- Server listens on http://localhost:8080
 - H2 console (optional): http://localhost:8080/h2-console
 
 Notes
@@ -43,21 +43,19 @@ Notes
 - GET /search/players?query=...
   - Players matching a query.
 
-## Data normalization
-- Team names are normalized to remove gender/division suffixes (e.g., "Men's", "Women's", "Womxn", "Open").
-- League parsing is robust to common variants in tournament/roster data.
-
-## Project layout
-- src/main/java/com/kugel/ulti_insights
-  - Models: Player, Teams, TeamYears, UltiData
-  - Views/Controllers: TeamEntry, PlayerEntrys, Search
-  - StartupPopulator: CSV ingestion and association wiring
-- src/main/resources: application properties and CSVs
-
 ## Build
 - Package: `./mvnw clean package`
-- Artifact: target/ulti-insights-0.0.1-SNAPSHOT.jar
+- Artifact: target/stadisticts-1.0.jar
+
+## Docker
+A multi-stage Dockerfile is provided.
+
+- Build image:
+  - `docker build -t stadisticts:1.0 .`
+- Run (dev profile with H2):
+  - `docker run --rm -p 8080:8080 -e SPRING_PROFILES_ACTIVE=dev stadisticts:1.0`
+- Run (prod profile):
+  - `docker run --rm -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod stadisticts:1.0`
 
 ## Contributing
-- Open issues/PRs. Please include tests where possible and keep endpoints documented here.
-
+Open issues/PRs. Please include tests where possible and keep endpoints documented here.
