@@ -6,11 +6,11 @@ import com.kugel.ulti_insights.Models.TeamYears.TeamYears;
 import com.kugel.ulti_insights.Models.Teams.TeamService;
 import com.kugel.ulti_insights.Models.Teams.Teams;
 import com.kugel.ulti_insights.Models.UltiData.UltiData;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import jakarta.transaction.Transactional;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -167,7 +167,7 @@ public class StartupPopulator implements CommandLineRunner {
   @Override
   @Transactional
   public void run(String... args) {
-    String filename = "src/main/resources/data.csv";
+    String filename = "src/main/resources/bidsdata/Event Database.csv";
     String line;
     String delimiter = ",";
 
@@ -177,11 +177,10 @@ public class StartupPopulator implements CommandLineRunner {
 
     log.info("Starting csv reading");
 
-    try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-      br.readLine();
-      while ((line = br.readLine()) != null) {
-        String[] data = line.split(delimiter);
-
+    try (CSVReader csvReader =
+        new CSVReaderBuilder(new FileReader(filename)).withSkipLines(1).build()) {
+      String[] data;
+      while ((data = csvReader.readNext()) != null) {
         short year = Short.parseShort(data[1]);
         String tournament = data[2];
         League league = parseLeagueFromTournament(tournament);
@@ -256,22 +255,24 @@ public class StartupPopulator implements CommandLineRunner {
       playerService.saveAll(new ArrayList<>(playersToSave.values()));
 
       log.info("finished all saves");
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Could not open file: {} (wd: {})", filename, new File(".").getAbsolutePath(), e);
     }
 
     log.info("Now reading roster");
 
     // Roster database parsing and building the Teams and TeamYears
-    String rosterFile = "src/main/resources/rosterFile.csv";
+    String rosterFile = "src/main/resources/bidsdata/Roster Database.csv";
     ArrayList<Player> rosterPlayersToCreate = new ArrayList<>();
 
-    try (BufferedReader br = new BufferedReader(new FileReader(rosterFile))) {
-      br.readLine();
+    try (CSVReader csvReader =
+        new CSVReaderBuilder(new FileReader(rosterFile)).withSkipLines(1).build()) {
       List<String[]> rosterLines = new ArrayList<>();
-      while ((line = br.readLine()) != null) {
-        rosterLines.add(line.split(delimiter));
+      String[] dataIn;
+      while ((dataIn = csvReader.readNext()) != null) {
+        rosterLines.add(dataIn);
       }
+
       log.info("done reading roster");
 
       // Preload caches
@@ -365,7 +366,7 @@ public class StartupPopulator implements CommandLineRunner {
       log.info("now saving all");
       teamService.saveAll(teamsToSave);
 
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Could not open file: {} (wd: {})", rosterFile, new File(".").getAbsolutePath(), e);
     }
 

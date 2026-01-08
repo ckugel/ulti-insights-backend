@@ -53,6 +53,12 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+	<!-- CSV parsing -->
+	<dependency>
+	      <groupId>com.opencsv</groupId>
+	      <artifactId>opencsv</artifactId>
+	      <version>5.8</version>
+	</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>

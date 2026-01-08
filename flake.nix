@@ -6,8 +6,14 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         # Simple build script that works with network access
@@ -25,7 +31,7 @@
         tunnel-service = pkgs.writeShellScriptBin "stadisticts-tunnel" ''
           set -e
 
-          TUNNEL_NAME="''${TUNNEL_NAME:-stadisticts}"
+          TUNNEL_NAME="''${TUNNEL_NAME:-bids}"
 
           echo "Starting Cloudflare Tunnel: $TUNNEL_NAME"
           ${pkgs.cloudflared}/bin/cloudflared tunnel run $TUNNEL_NAME
@@ -35,7 +41,7 @@
         deploy-script = pkgs.writeShellScriptBin "stadisticts-deploy" ''
           set -e
 
-          TUNNEL_NAME="''${TUNNEL_NAME:-stadisticts}"
+          TUNNEL_NAME="''${TUNNEL_NAME:-bids}"
           JAR_FILE="target/stadisticts-1.0.jar"
 
           echo "Deploying Stadisticts..."
@@ -113,10 +119,10 @@
         setup-script = pkgs.writeShellScriptBin "stadisticts-setup" ''
           set -e
 
-          TUNNEL_NAME="''${TUNNEL_NAME:-stadisticts}"
+          TUNNEL_NAME="''${TUNNEL_NAME:-bids}"
           CONFIG_DIR="''${HOME}/.cloudflared"
 
-          echo "Setting up Stadisticts with Cloudflare Tunnel"
+          echo "Setting up BIDs with Cloudflare Tunnel"
           echo "================================================"
           echo ""
 
@@ -210,7 +216,7 @@
             echo "  stadisticts-build        # Build for deployment"
             echo ""
             echo "Configuration:"
-            echo "  TUNNEL_NAME=''${TUNNEL_NAME:-stadisticts}"
+            echo "  TUNNEL_NAME=''${TUNNEL_NAME:-bids}"
             echo "  PORT=''${PORT:-8080}"
             echo ""
 
@@ -220,94 +226,105 @@
         };
 
         # NixOS service module for server deployment
-        nixosModules.stadisticts = { config, lib, pkgs, ... }: {
-          options.services.stadisticts = {
-            enable = lib.mkEnableOption "Stadisticts Ultimate Frisbee API";
+        nixosModules.stadisticts =
+          {
+            config,
+            lib,
+            pkgs,
+            ...
+          }:
+          {
+            options.services.stadisticts = {
+              enable = lib.mkEnableOption "Stadisticts Ultimate Frisbee API";
 
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 8080;
-              description = "Port to run Stadisticts on";
-            };
+              port = lib.mkOption {
+                type = lib.types.port;
+                default = 8080;
+                description = "Port to run Stadisticts on";
+              };
 
-            tunnelName = lib.mkOption {
-              type = lib.types.str;
-              default = "stadisticts";
-              description = "Cloudflare Tunnel name";
-            };
+              tunnelName = lib.mkOption {
+                type = lib.types.str;
+                default = "bids";
+                description = "Cloudflare Tunnel name";
+              };
 
-            jarPath = lib.mkOption {
-              type = lib.types.path;
-              description = "Path to the stadisticts JAR file";
-            };
-          };
-
-          config = lib.mkIf config.services.stadisticts.enable {
-            systemd.services.stadisticts = {
-              description = "Stadisticts Ultimate Frisbee API";
-              after = [ "network.target" ];
-              wantedBy = [ "multi-user.target" ];
-
-              serviceConfig = {
-                ExecStart = "${pkgs.jdk21}/bin/java -Dspring.profiles.active=prod-h2 -Dserver.port=${toString config.services.stadisticts.port} -jar ${config.services.stadisticts.jarPath}";
-                Restart = "always";
-                User = "stadisticts";
-                Group = "stadisticts";
-                WorkingDirectory = "/var/lib/stadisticts";
-
-                # Security hardening
-                NoNewPrivileges = true;
-                PrivateTmp = true;
-                ProtectSystem = "strict";
-                ProtectHome = true;
-                ReadWritePaths = [ "/var/lib/stadisticts" ];
-
-                Environment = [
-                  "PORT=${toString config.services.stadisticts.port}"
-                  "SPRING_PROFILES_ACTIVE=prod-h2"
-                ];
+              jarPath = lib.mkOption {
+                type = lib.types.path;
+                description = "Path to the stadisticts JAR file";
               };
             };
 
-            systemd.services.stadisticts-tunnel = {
-              description = "Cloudflare Tunnel for Stadisticts";
-              after = [ "network.target" "stadisticts.service" ];
-              wantedBy = [ "multi-user.target" ];
+            config = lib.mkIf config.services.stadisticts.enable {
+              systemd.services.stadisticts = {
+                description = "Stadisticts Ultimate Frisbee API";
+                after = [ "network.target" ];
+                wantedBy = [ "multi-user.target" ];
 
-              serviceConfig = {
-                ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel run ${config.services.stadisticts.tunnelName}";
-                Restart = "always";
-                User = "stadisticts";
-                Group = "stadisticts";
-                WorkingDirectory = "/var/lib/stadisticts";
+                serviceConfig = {
+                  ExecStart = "${pkgs.jdk21}/bin/java -Dspring.profiles.active=prod-h2 -Dserver.port=${toString config.services.stadisticts.port} -jar ${config.services.stadisticts.jarPath}";
+                  Restart = "always";
+                  User = "stadisticts";
+                  Group = "stadisticts";
+                  WorkingDirectory = "/var/lib/stadisticts";
 
-                Environment = [
-                  "TUNNEL_NAME=${config.services.stadisticts.tunnelName}"
-                ];
+                  # Security hardening
+                  NoNewPrivileges = true;
+                  PrivateTmp = true;
+                  ProtectSystem = "strict";
+                  ProtectHome = true;
+                  ReadWritePaths = [ "/var/lib/stadisticts" ];
+
+                  Environment = [
+                    "PORT=${toString config.services.stadisticts.port}"
+                    "SPRING_PROFILES_ACTIVE=prod-h2"
+                  ];
+                };
               };
+
+              systemd.services.stadisticts-tunnel = {
+                description = "Cloudflare Tunnel for Stadisticts";
+                after = [
+                  "network.target"
+                  "stadisticts.service"
+                ];
+                wantedBy = [ "multi-user.target" ];
+
+                serviceConfig = {
+                  ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel run ${config.services.stadisticts.tunnelName}";
+                  Restart = "always";
+                  User = "stadisticts";
+                  Group = "stadisticts";
+                  WorkingDirectory = "/var/lib/stadisticts";
+
+                  Environment = [
+                    "TUNNEL_NAME=${config.services.stadisticts.tunnelName}"
+                  ];
+                };
+              };
+
+              # Create dedicated user and group
+              users.users.stadisticts = {
+                isSystemUser = true;
+                group = "stadisticts";
+                home = "/var/lib/stadisticts";
+                createHome = true;
+                description = "Stadisticts service user";
+              };
+
+              users.groups.stadisticts = { };
+
+              # Allow local access (optional)
+              networking.firewall.allowedTCPPorts = [ config.services.stadisticts.port ];
+
+              # Ensure data directory exists with correct permissions
+              systemd.tmpfiles.rules = [
+                "d /var/lib/stadisticts 0755 stadisticts stadisticts -"
+                "d /var/lib/stadisticts/data 0755 stadisticts stadisticts -"
+                "d /var/lib/stadisticts/logs 0755 stadisticts stadisticts -"
+              ];
             };
-
-            # Create dedicated user and group
-            users.users.stadisticts = {
-              isSystemUser = true;
-              group = "stadisticts";
-              home = "/var/lib/stadisticts";
-              createHome = true;
-              description = "Stadisticts service user";
-            };
-
-            users.groups.stadisticts = {};
-
-            # Allow local access (optional)
-            networking.firewall.allowedTCPPorts = [ config.services.stadisticts.port ];
-
-            # Ensure data directory exists with correct permissions
-            systemd.tmpfiles.rules = [
-              "d /var/lib/stadisticts 0755 stadisticts stadisticts -"
-              "d /var/lib/stadisticts/data 0755 stadisticts stadisticts -"
-              "d /var/lib/stadisticts/logs 0755 stadisticts stadisticts -"
-            ];
           };
-        };
-      });
+      }
+    );
 }

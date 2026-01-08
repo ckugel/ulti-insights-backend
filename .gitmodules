@@ -1,0 +1,3 @@
+[submodule "src/main/resources/bidsdata"]
+	path = src/main/resources/bidsdata
+	url = git@github.com:ckugel/bidsdata.git
