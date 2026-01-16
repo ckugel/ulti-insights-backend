@@ -11,8 +11,28 @@ public class PlayerEntry {
   private Double rankingValue;
   private double yearValueTwo;
   private double displayValue;
+  private String tournament;
 
   public PlayerEntry() {}
+
+  public PlayerEntry(
+      String name,
+      String team,
+      short year,
+      String tournament,
+      League league,
+      Double rankingValue,
+      double yearValueTwo,
+      double displayValue) {
+    this.name = name;
+    this.team = team;
+    this.year = year;
+    this.league = league;
+    this.rankingValue = rankingValue;
+    this.yearValueTwo = yearValueTwo;
+    this.displayValue = displayValue;
+    this.tournament = tournament;
+  }
 
   public PlayerEntry(
       String name,
@@ -98,14 +118,30 @@ public class PlayerEntry {
         + '\''
         + ", year="
         + year
+        + '\''
+        + ", tournament="
+        + tournament
+        + '\''
         + ", league="
         + league
+        + '\''
         + ", rankingValue="
         + rankingValue
+        + '\''
         + ", yearValueTwo="
         + yearValueTwo
+        + '\''
         + ", displayValue"
         + displayValue
+        + '\''
         + '}';
+  }
+
+  public String getTournament() {
+    return tournament;
+  }
+
+  public void setTournament(String tournament) {
+    this.tournament = tournament;
   }
 }

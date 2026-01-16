@@ -147,6 +147,9 @@ public class Player {
     UltiData minYearEntry = Collections.min(entries, Comparator.comparing(UltiData::getYearValue));
     UltiData maxYearEntry = Collections.max(entries, Comparator.comparing(UltiData::getYearValue));
 
+    // System.out.printf("year indexed on: {%d}. max year: {%d}. min year: {%d}\n",year,
+    // maxYearEntry.getYearValue(), minYearEntry.getYearValue());
+
     if (year < minYearEntry.getYearValue()) {
       return 0d;
     }
